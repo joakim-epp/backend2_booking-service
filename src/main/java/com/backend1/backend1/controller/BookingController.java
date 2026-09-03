@@ -1,12 +1,14 @@
 package com.backend1.backend1.controller;
 
 import com.backend1.backend1.dto.BookingDTO;
+import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -18,6 +20,14 @@ public class BookingController {
     @GetMapping
     public List<BookingDTO> list() {
         return bookingService.findAll();
+    }
+
+    @GetMapping("/count")
+    public Map<String, Long> count(@RequestParam Long customerId, @RequestParam String status) {
+        if (!"ACTIVE".equals(status)) {
+            throw new BookingValidationException("status måste vara ACTIVE");
+        }
+        return Map.of("count", bookingService.countActive(customerId));
     }
 
     @GetMapping("/{id}")

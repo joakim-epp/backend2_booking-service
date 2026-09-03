@@ -15,6 +15,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByCustomerId(Long customerId);
 
+    long countByCustomerIdAndCheckOutGreaterThanEqual(Long customerId, LocalDate date);
+
     long countByRoomIdAndCheckInBeforeAndCheckOutAfter(
             Long roomId, LocalDate checkOut, LocalDate checkIn);
 

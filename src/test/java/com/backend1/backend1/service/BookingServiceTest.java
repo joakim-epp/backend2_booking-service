@@ -29,6 +29,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
 
+    @Test
+    @DisplayName("countActive räknar bokningar som inte checkat ut än")
+    void countActiveCountsBookingsNotYetCheckedOut() {
+        when(bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(eq(7L), any(LocalDate.class))).thenReturn(2L);
+
+        assertThat(bookingService.countActive(7L)).isEqualTo(2L);
+        verify(bookingRepository).countByCustomerIdAndCheckOutGreaterThanEqual(7L, LocalDate.now());
+    }
+
     @Mock
     private BookingRepository bookingRepository;
     @Mock

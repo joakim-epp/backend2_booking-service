@@ -4,8 +4,8 @@ Bokningstjänst i pensionatets microservice-uppdelning, flyttad hit från Backen
 bokningar. Kundtjänsten äger kunder och notifieringstjänsten äger notifieringar.
 
 Läget just nu: koden är monoliten från Backend 1 med egen `customers`-tabell och egna
-kundendpoints, ompaketerad för Docker och Railway. Kontraktet som kundtjänsten förväntar sig,
-`GET /api/bookings/count?customerId=&status=ACTIVE` med JWT, är inte implementerat än.
+kundendpoints, ompaketerad för Docker och Render. Kundtjänstens kontrakt
+`GET /api/bookings/count?customerId=&status=ACTIVE` finns, men utan JWT-krav än.
 
 ## Kom igång
 
@@ -70,6 +70,7 @@ Kundtjänsten ligger på Railway och når hit över publika nätet:
 |---|---|
 | GET/POST/PUT/DELETE | `/api/rooms`, `/api/rooms/{id}`, `/api/rooms/types`, `/api/rooms/available` |
 | GET/POST/PUT/DELETE | `/api/bookings`, `/api/bookings/{id}` |
+| GET | `/api/bookings/count?customerId=&status=ACTIVE` |
 | GET/POST/PUT/DELETE | `/api/customers`, `/api/customers/{id}` |
 | GET | `/api/stats` |
 

@@ -29,6 +29,12 @@ public class BookingService {
         return bookingRepository.findAll().stream().map(this::toDTO).toList();
     }
 
+    /** Bookings the guest has not checked out from yet. The customer service asks before deleting a customer. */
+    @Transactional(readOnly = true)
+    public long countActive(Long customerId) {
+        return bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(customerId, LocalDate.now());
+    }
+
     @Transactional(readOnly = true)
     public BookingDTO findById(Long id) {
         return bookingRepository.findById(id)

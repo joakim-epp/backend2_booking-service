@@ -19,7 +19,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://booking-db:5432/bookingdb
+      PGHOST: booking-db
+      PGPORT: 5432
+      PGDATABASE: bookingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     healthcheck:

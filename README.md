@@ -45,25 +45,24 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 
 | Variabel | Standard | Beskrivning |
 |---|---|---|
-| `PORT` | `8081` | Lyssnarport, sätts av Railway |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5433/bookingdb` | JDBC-URL till Postgres |
+| `PORT` | `8081` | Lyssnarport, sätts av plattformen |
+| `PGHOST`, `PGPORT`, `PGDATABASE` | `localhost`, `5433`, `bookingdb` | Postgres-anslutning, sätts av Render från databasen |
+| `SPRING_DATASOURCE_URL` | byggd av `PG*` ovan | Fullständig JDBC-URL, går före `PG*` om satt |
 | `SPRING_DATASOURCE_USERNAME` | `postgres` | |
 | `SPRING_DATASOURCE_PASSWORD` | `postgres` | |
 
-## Railway
+## Render
 
-Dockerfile i roten bygger frontend och jar. Lägg till en Postgres-tjänst och sätt på
-bokningstjänsten:
+`render.yaml` i roten är en Blueprint som skapar databasen `booking-db` och webbtjänsten
+`pensionat-booking-service` i Frankfurt, båda på gratisplanen. Databasen kopplas till tjänsten via
+`fromDatabase`, inga variabler behöver sättas för hand. Skapa via Dashboard, New, Blueprint, välj
+repot, Apply.
 
-```
-PORT=8081
-SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
-SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
-SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
-```
+Gratisplanens webbtjänst somnar efter 15 minuter utan trafik och första anropet därefter tar
+ungefär en minut. Gratisdatabasen raderas efter 30 dagar om den inte uppgraderas.
 
-Healthcheck Path: `/actuator/health/readiness`. Kundtjänstens `BOOKING_SERVICE_URL` pekas på
-`http://${{booking-service.RAILWAY_PRIVATE_DOMAIN}}:8081`.
+Kundtjänsten ligger på Railway och når hit över publika nätet:
+`BOOKING_SERVICE_URL=https://pensionat-booking-service.onrender.com`.
 
 ## API
 

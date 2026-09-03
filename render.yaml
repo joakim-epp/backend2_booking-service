@@ -1,0 +1,35 @@
+databases:
+  - name: booking-db
+    plan: free
+    region: frankfurt
+    databaseName: bookingdb
+    user: booking
+
+services:
+  - type: web
+    name: pensionat-booking-service
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /actuator/health/readiness
+    envVars:
+      - key: PGHOST
+        fromDatabase:
+          name: booking-db
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: booking-db
+          property: port
+      - key: PGDATABASE
+        fromDatabase:
+          name: booking-db
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: booking-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: booking-db
+          property: password

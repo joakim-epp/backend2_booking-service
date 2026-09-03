@@ -2,6 +2,7 @@ package com.backend1.backend1.service;
 
 import com.backend1.backend1.dto.RoomDTO;
 import com.backend1.backend1.exception.BookingValidationException;
+import com.backend1.backend1.exception.NotFoundException;
 import com.backend1.backend1.model.Room;
 import com.backend1.backend1.model.RoomType;
 import com.backend1.backend1.repository.BookingRepository;
@@ -29,16 +30,22 @@ public class RoomService {
     public RoomDTO findById(Long id) {
         return roomRepository.findById(id)
                 .map(this::toDTO)
-                .orElseThrow(() -> new IllegalArgumentException("Rum med id " + id + " hittades inte"));
+                .orElseThrow(() -> new NotFoundException("Rum med id " + id + " hittades inte", "ROOM_NOT_FOUND"));
     }
 
     @Transactional
-    public void save(RoomDTO form) {
-        roomRepository.save(toEntity(form));
+    public RoomDTO save(RoomDTO form) {
+        if (form.getId() != null && !roomRepository.existsById(form.getId())) {
+            throw new NotFoundException("Rum med id " + form.getId() + " hittades inte", "ROOM_NOT_FOUND");
+        }
+        return toDTO(roomRepository.save(toEntity(form)));
     }
 
     @Transactional
     public void delete(Long id) {
+        if (!roomRepository.existsById(id)) {
+            throw new NotFoundException("Rum med id " + id + " hittades inte", "ROOM_NOT_FOUND");
+        }
         if (bookingRepository.existsByRoomId(id)) {
             throw new IllegalStateException("Kan inte ta bort rum som har aktiva bokningar");
         }

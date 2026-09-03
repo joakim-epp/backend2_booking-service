@@ -1,14 +1,15 @@
 package com.backend1.backend1.service;
 
+import com.backend1.backend1.client.CustomerClient;
+import com.backend1.backend1.client.NotificationClient;
 import com.backend1.backend1.dto.BookingDTO;
+import com.backend1.backend1.exception.NotFoundException;
 import com.backend1.backend1.exception.BookingConflictException;
 import com.backend1.backend1.exception.BookingValidationException;
 import com.backend1.backend1.model.Booking;
-import com.backend1.backend1.model.Customer;
 import com.backend1.backend1.model.Room;
 import com.backend1.backend1.model.RoomType;
 import com.backend1.backend1.repository.BookingRepository;
-import com.backend1.backend1.repository.CustomerRepository;
 import com.backend1.backend1.repository.RoomRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,13 +36,16 @@ class BookingServiceTest {
         when(bookingRepository.countByCustomerIdAndCheckOutGreaterThanEqual(eq(7L), any(LocalDate.class))).thenReturn(2L);
 
         assertThat(bookingService.countActive(7L)).isEqualTo(2L);
-        verify(bookingRepository).countByCustomerIdAndCheckOutGreaterThanEqual(7L, LocalDate.now());
+        verify(bookingRepository).countByCustomerIdAndCheckOutGreaterThanEqual(
+                7L, LocalDate.now(java.time.ZoneId.of("Europe/Stockholm")));
     }
 
     @Mock
     private BookingRepository bookingRepository;
     @Mock
-    private CustomerRepository customerRepository;
+    private CustomerClient customerClient;
+    @Mock
+    private NotificationClient notificationClient;
     @Mock
     private RoomRepository roomRepository;
 
@@ -51,14 +55,6 @@ class BookingServiceTest {
     private final LocalDate TODAY  = LocalDate.of(2025, 6, 1);
     private final LocalDate TMRW   = LocalDate.of(2025, 6, 2);
     private final LocalDate WEEK   = LocalDate.of(2025, 6, 8);
-
-    private Customer buildCustomer(Long id) {
-        Customer c = new Customer();
-        c.setId(id);
-        c.setFirstName("Test");
-        c.setLastName("Kund");
-        return c;
-    }
 
     private Room buildRoom(Long id, RoomType type, int extraBeds, String price) {
         Room r = new Room();
@@ -70,10 +66,10 @@ class BookingServiceTest {
         return r;
     }
 
-    private Booking buildBooking(Long id, Customer c, Room r, LocalDate in, LocalDate out) {
+    private Booking buildBooking(Long id, Long customerId, Room r, LocalDate in, LocalDate out) {
         Booking b = new Booking();
         b.setId(id);
-        b.setCustomer(c);
+        b.setCustomerId(customerId);
         b.setRoom(r);
         b.setCheckIn(in);
         b.setCheckOut(out);
@@ -85,8 +81,7 @@ class BookingServiceTest {
     @DisplayName("findAll returnerar alla bokningar som DTO-lista")
     void findAll_returnsMappedDTOs() {
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
-        Customer c = buildCustomer(1L);
-        Booking b = buildBooking(1L, c, r, TODAY, WEEK);
+        Booking b = buildBooking(1L, 1L, r, TODAY, WEEK);
         when(bookingRepository.findAll()).thenReturn(List.of(b));
 
         List<BookingDTO> result = bookingService.findAll();
@@ -101,8 +96,7 @@ class BookingServiceTest {
     @DisplayName("findById med giltigt id returnerar korrekt DTO")
     void findById_found_returnsDTO() {
         Room r = buildRoom(1L, RoomType.DOUBLE, 0, "1200");
-        Customer c = buildCustomer(2L);
-        Booking b = buildBooking(5L, c, r, TODAY, TMRW);
+        Booking b = buildBooking(5L, 2L, r, TODAY, TMRW);
         when(bookingRepository.findById(5L)).thenReturn(Optional.of(b));
 
         BookingDTO dto = bookingService.findById(5L);
@@ -113,12 +107,12 @@ class BookingServiceTest {
     }
 
     @Test
-    @DisplayName("findById med okänt id kastar IllegalArgumentException")
+    @DisplayName("findById med okänt id kastar NotFoundException")
     void findById_notFound_throwsException() {
         when(bookingRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookingService.findById(99L))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(NotFoundException.class);
     }
 
     //Testar att fel datum blockeras
@@ -147,9 +141,6 @@ class BookingServiceTest {
         // Enkelrum = kapacitet 1, försöker boka 2 gäster
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
 
-        Customer c = buildCustomer(1L);
-
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
         when(roomRepository.findById(1L)).thenReturn(Optional.of(r));
 
         assertThatThrownBy(() ->
@@ -165,18 +156,19 @@ class BookingServiceTest {
         // Dubbelrum utan extrasängar = kapacitet 2
         Room r = buildRoom(2L, RoomType.DOUBLE, 0, "1200");
 
-        Customer c = buildCustomer(1L);
-
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
+        when(customerClient.exists(1L)).thenReturn(true);
         when(roomRepository.findById(2L)).thenReturn(Optional.of(r));
 
         when(bookingRepository.countByRoomIdAndCheckInBeforeAndCheckOutAfter(
                 anyLong(), any(), any())).thenReturn(0L);
 
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArgument(0));
+
         assertThatNoException().isThrownBy(() ->
                 bookingService.save(null, 1L, 2L, TODAY, WEEK, 2));
 
         verify(bookingRepository).save(any(Booking.class));
+        verify(notificationClient).bookingConfirmed(any(Booking.class));
     }
 
     //Testar att dubbelbokningar blockeras
@@ -185,9 +177,7 @@ class BookingServiceTest {
     void save_roomAlreadyBooked_throwsConflictException() {
 
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
-        Customer c = buildCustomer(1L);
-
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
+        when(customerClient.exists(1L)).thenReturn(true);
         when(roomRepository.findById(1L)).thenReturn(Optional.of(r));
 
         // Simulera befintlig överlappande bokning
@@ -205,51 +195,50 @@ class BookingServiceTest {
     void save_updateExistingBooking_excludesSelf() {
 
         Room r = buildRoom(1L, RoomType.SINGLE, 0, "800");
-        Customer c = buildCustomer(1L);
-
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
+        when(customerClient.exists(1L)).thenReturn(true);
         when(roomRepository.findById(1L)).thenReturn(Optional.of(r));
 
         // countByRoomIdAndCheckInBeforeAndCheckOutAfterAndIdNot ska returnera 0
+        when(bookingRepository.existsById(10L)).thenReturn(true);
         when(bookingRepository.countByRoomIdAndCheckInBeforeAndCheckOutAfterAndIdNot(
                 anyLong(), any(), any(), eq(10L))).thenReturn(0L);
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(i -> i.getArgument(0));
 
         assertThatNoException().isThrownBy(() ->
                 bookingService.save(10L, 1L, 1L, TODAY, WEEK, 1));
 
         verify(bookingRepository).save(any(Booking.class));
+        verify(notificationClient, never()).bookingConfirmed(any());
     }
 
     @Test
-    @DisplayName("save kastar BookingValidationException om kunden inte finns")
-    void save_unknownCustomer_throwsValidationException() {
-
-        when(customerRepository.findById(99L)).thenReturn(Optional.empty());
+    @DisplayName("save kastar NotFoundException om kundtjänsten inte känner till kunden")
+    void save_unknownCustomer_throwsNotFound() {
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(buildRoom(1L, RoomType.SINGLE, 0, "800")));
+        when(customerClient.exists(99L)).thenReturn(false);
 
         assertThatThrownBy(() ->
                 bookingService.save(null, 99L, 1L, TODAY, WEEK, 1))
-                .isInstanceOf(BookingValidationException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Kund");
+        verify(bookingRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("save kastar BookingValidationException om rummet inte finns")
-    void save_unknownRoom_throwsValidationException() {
-
-        Customer c = buildCustomer(1L);
-
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(c));
+    @DisplayName("save kastar NotFoundException om rummet inte finns")
+    void save_unknownRoom_throwsNotFound() {
         when(roomRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
                 bookingService.save(null, 1L, 99L, TODAY, WEEK, 1))
-                .isInstanceOf(BookingValidationException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Rum");
     }
 
     @Test
     @DisplayName("delete anropar repository.deleteById med rätt id")
     void delete_callsDeleteById() {
+        when(bookingRepository.existsById(7L)).thenReturn(true);
 
         bookingService.delete(7L);
 

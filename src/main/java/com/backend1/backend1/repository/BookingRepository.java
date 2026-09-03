@@ -7,13 +7,9 @@ import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    boolean existsByCustomerId(Long customerId);
-
     boolean existsByRoomId(Long roomId);
 
     List<Booking> findByCheckInBeforeAndCheckOutAfter(LocalDate checkOut, LocalDate checkIn);
-
-    long countByCustomerId(Long customerId);
 
     long countByCustomerIdAndCheckOutGreaterThanEqual(Long customerId, LocalDate date);
 

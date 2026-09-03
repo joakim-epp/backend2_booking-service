@@ -2,6 +2,7 @@ package com.backend1.backend1.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,11 +14,13 @@ public class BookingDTO {
     private Long id;
 
     @NotNull(message = "Kund är obligatorisk")
+    @Positive(message = "Kund-id måste vara positivt")
     private Long customerId;
 
     private String customerFullName;
 
     @NotNull(message = "Rum är obligatoriskt")
+    @Positive(message = "Rum-id måste vara positivt")
     private Long roomId;
 
     private String roomNumber;

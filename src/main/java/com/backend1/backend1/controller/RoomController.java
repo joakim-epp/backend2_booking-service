@@ -6,8 +6,12 @@ import com.backend1.backend1.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -46,18 +50,22 @@ public class RoomController {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody RoomDTO room) {
+    public ResponseEntity<RoomDTO> create(@Valid @RequestBody RoomDTO room) {
         room.setId(null);
-        roomService.save(room);
+        RoomDTO created = roomService.save(room);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(created.getId()).toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @Valid @RequestBody RoomDTO room) {
+    public RoomDTO update(@PathVariable Long id, @Valid @RequestBody RoomDTO room) {
         room.setId(id);
-        roomService.save(room);
+        return roomService.save(room);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         roomService.delete(id);
     }

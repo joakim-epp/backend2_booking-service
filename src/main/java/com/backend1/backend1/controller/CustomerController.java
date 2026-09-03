@@ -1,44 +1,44 @@
 package com.backend1.backend1.controller;
 
-import com.backend1.backend1.dto.CustomerDTO;
-import com.backend1.backend1.service.CustomerService;
-import jakarta.validation.Valid;
+import com.backend1.backend1.client.CustomerClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+/**
+ * The customer pages of the frontend still live here, but every call is relayed to the customer
+ * service. No customer data is stored or interpreted on this side.
+ */
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 public class CustomerController {
 
-    private final CustomerService customerService;
+    private final CustomerClient customerClient;
 
     @GetMapping
-    public List<CustomerDTO> list() {
-        return customerService.findAll();
+    public ResponseEntity<String> list() {
+        return customerClient.forward(HttpMethod.GET, "/api/customers", null);
     }
 
     @GetMapping("/{id}")
-    public CustomerDTO get(@PathVariable Long id) {
-        return customerService.findById(id);
+    public ResponseEntity<String> get(@PathVariable Long id) {
+        return customerClient.forward(HttpMethod.GET, "/api/customers/" + id, null);
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody CustomerDTO customer) {
-        customer.setId(null);
-        customerService.save(customer);
+    public ResponseEntity<String> create(@RequestBody String body) {
+        return customerClient.forward(HttpMethod.POST, "/api/customers", body);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @Valid @RequestBody CustomerDTO customer) {
-        customer.setId(id);
-        customerService.save(customer);
+    public ResponseEntity<String> update(@PathVariable Long id, @RequestBody String body) {
+        return customerClient.forward(HttpMethod.PUT, "/api/customers/" + id, body);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        customerService.delete(id);
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        return customerClient.forward(HttpMethod.DELETE, "/api/customers/" + id, null);
     }
 }

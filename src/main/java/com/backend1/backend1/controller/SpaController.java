@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SpaController {
 
     // React router owns these paths; hand them the built index.html.
-    @GetMapping({"/", "/customers/**", "/rooms/**", "/bookings/**"})
+    @GetMapping({"/", "/login", "/customers/**", "/rooms/**", "/bookings/**"})
     public String spa() {
         return "forward:/index.html";
     }

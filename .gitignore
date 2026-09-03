@@ -35,3 +35,6 @@ build/
 ### Frontend build output ###
 frontend/node_modules/
 src/main/resources/static/
+
+### Secrets ###
+.env

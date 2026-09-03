@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { api, kr, useApi } from '../api.js'
+import { api, fullName, kr, useApi } from '../api.js'
 import { Flash, PageBar } from '../Layout.jsx'
 
 export default function BookingForm() {
@@ -64,7 +64,7 @@ export default function BookingForm() {
                             value={booking.customerId ?? ''} onChange={set('customerId')}>
                       <option value="">– Välj kund –</option>
                       {customers?.map((c) => (
-                        <option key={c.id} value={c.id}>{c.fullName}{c.phone ? ' · ' + c.phone : ''}</option>
+                        <option key={c.id} value={c.id}>{fullName(c)}{c.phone ? ' · ' + c.phone : ''}</option>
                       ))}
                     </select>
                     <div className="mt-1" style={{ fontSize: 12, color: 'var(--bk-text-light)' }}>

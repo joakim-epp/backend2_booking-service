@@ -4,6 +4,7 @@ import { useApi } from '../api.js'
 
 export default function Home() {
   const { data: stats } = useApi('/stats')
+  const { data: customers } = useApi('/customers')
   const [form, setForm] = useState({ checkIn: '', checkOut: '', numberOfGuests: 1 })
   const navigate = useNavigate()
 
@@ -13,7 +14,7 @@ export default function Home() {
   }
 
   const cards = [
-    { count: stats?.customerCount, label: 'Kunder', to: '/customers', cta: 'Hantera kunder' },
+    { count: customers?.length, label: 'Kunder', to: '/customers', cta: 'Hantera kunder' },
     { count: stats?.roomCount, label: 'Rum', to: '/rooms', cta: 'Hantera rum' },
     { count: stats?.bookingCount, label: 'Bokningar', to: '/bookings', cta: 'Visa bokningar' },
   ]

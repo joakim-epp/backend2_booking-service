@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { api, useApi } from '../api.js'
+import { api, fullName, useApi } from '../api.js'
 import { Empty, Flash, PageBar } from '../Layout.jsx'
 
 export default function Customers() {
@@ -46,7 +46,6 @@ export default function Customers() {
                   <th>E-post</th>
                   <th>Telefon</th>
                   <th>Adress</th>
-                  <th className="text-center">Bokningar</th>
                   <th className="text-end">Åtgärder</th>
                 </tr>
                 </thead>
@@ -59,8 +58,8 @@ export default function Customers() {
                           width: 32, height: 32, borderRadius: '50%', background: 'var(--bk-navy)', color: '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 13, fontWeight: 800, flexShrink: 0,
-                        }}>{c.fullName.charAt(0)}</div>
-                        <span className="fw-bold">{c.fullName}</span>
+                        }}>{c.firstName.charAt(0)}</div>
+                        <span className="fw-bold">{fullName(c)}</span>
                       </div>
                     </td>
                     <td>
@@ -70,22 +69,12 @@ export default function Customers() {
                     </td>
                     <td>{c.phone || '–'}</td>
                     <td><span className="text-muted" style={{ fontSize: 12 }}>{c.address || '–'}</span></td>
-                    <td className="text-center">
-                      <span style={{
-                        display: 'inline-block', minWidth: 28, padding: '2px 8px', borderRadius: 12,
-                        fontSize: 12, fontWeight: 700,
-                        background: c.bookingCount === 0 ? '#f0f0f0' : '#cce5ff',
-                        color: c.bookingCount === 0 ? '#666' : '#003f8c',
-                      }}>{c.bookingCount}</span>
-                    </td>
                     <td className="text-end">
                       <div className="d-flex gap-1 justify-content-end">
                         <Link className="btn btn-bk btn-sm" to={`/customers/${c.id}/edit`}>
                           <i className="bi bi-pencil me-1"></i>Redigera
                         </Link>
-                        <button className="btn btn-outline-danger btn-sm" onClick={() => remove(c)}
-                                disabled={c.bookingCount > 0}
-                                title={c.bookingCount > 0 ? 'Kunden har aktiva bokningar' : undefined}>
+                        <button className="btn btn-outline-danger btn-sm" onClick={() => remove(c)}>
                           <i className="bi bi-trash me-1"></i>Ta bort
                         </button>
                       </div>

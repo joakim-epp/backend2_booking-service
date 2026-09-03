@@ -1,6 +1,22 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { clearToken, getToken } from './api.js'
 
 export default function Layout() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const loggedIn = Boolean(getToken())
+
+  // Everything but the login page needs a token: the customer pages are relayed to the customer
+  // service, which rejects every unauthenticated call.
+  if (!loggedIn && location.pathname !== '/login') {
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
+  }
+
+  const logout = () => {
+    clearToken()
+    navigate('/login')
+  }
+
   return (
     <>
       <nav className="bk-nav">
@@ -11,6 +27,9 @@ export default function Layout() {
             <NavLink to="/rooms">Rum</NavLink>
             <NavLink to="/bookings">Bokningar</NavLink>
             <NavLink className="btn-nav-search" to="/bookings/search">Sök rum</NavLink>
+            {loggedIn
+              ? <button className="btn btn-link text-white" onClick={logout}>Logga ut</button>
+              : <NavLink to="/login">Logga in</NavLink>}
           </div>
         </div>
       </nav>

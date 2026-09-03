@@ -1,0 +1,7 @@
+target/
+.git/
+.idea/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+frontend/node_modules/
+src/main/resources/static/

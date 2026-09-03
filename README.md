@@ -69,7 +69,7 @@ Healthcheck Path: `/actuator/health/readiness`. Kundtjänstens `BOOKING_SERVICE_
 
 | Metod | Path |
 |---|---|
-| GET/POST | `/api/rooms`, `/api/rooms/{id}` |
+| GET/POST/PUT/DELETE | `/api/rooms`, `/api/rooms/{id}`, `/api/rooms/types`, `/api/rooms/available` |
 | GET/POST/PUT/DELETE | `/api/bookings`, `/api/bookings/{id}` |
 | GET/POST/PUT/DELETE | `/api/customers`, `/api/customers/{id}` |
 | GET | `/api/stats` |

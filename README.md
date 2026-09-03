@@ -144,6 +144,14 @@ på sina Service-namn, samma namn som i compose. Tjänsterna är ClusterIP, så
 `kubectl port-forward svc/booking-service 8081:8081` för att nå frontenden. Riv ner med
 `kubectl delete -f k8s/`.
 
+Docker Desktops kluster hämtar en lokal image en gång och behåller den så länge taggen finns
+kvar i noden, även efter en ny `docker compose build`. Kör en pod en gammal image:
+
+```bash
+docker exec desktop-control-plane crictl rmi docker.io/library/customer-service:latest
+kubectl rollout restart deploy/customer-service
+```
+
 Samma manifest för kund- och notifieringstjänsten ligger i kundtjänstens repo. Ändras de där ska
 kopiorna här uppdateras.
 

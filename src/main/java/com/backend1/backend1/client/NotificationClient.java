@@ -21,12 +21,15 @@ public class NotificationClient {
     private final RestClient restClient;
     private final String baseUrl;
 
-    public NotificationClient(RestClient restClient, @Value("${notification.service.url}") String baseUrl) {
+    public NotificationClient(RestClient restClient, @Value("${notification.service.url:}") String baseUrl) {
         this.restClient = restClient;
         this.baseUrl = baseUrl;
     }
 
     public void bookingConfirmed(Booking booking) {
+        if (baseUrl.isBlank()) {
+            return;
+        }
         try {
             restClient.post()
                     .uri(baseUrl + "/api/notifications")

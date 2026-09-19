@@ -1,7 +1,6 @@
 package com.backend1.backend1.controller;
 
 import com.backend1.backend1.client.CustomerClient;
-import com.backend1.backend1.client.NotificationClient;
 import com.backend1.backend1.exception.CustomerServiceUnavailableException;
 import com.backend1.backend1.model.Booking;
 import com.backend1.backend1.model.Room;
@@ -31,9 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Real HTTP calls through security filter, controller, service, repository and database.
- * Only the other services are replaced, at the client boundary.
+ * Customer calls are stubbed; the real notification client runs without a configured URL.
  */
-@SpringBootTest
+@SpringBootTest(properties = "notification.service.url=")
 @AutoConfigureMockMvc
 class BookingControllerIntegrationTest {
 
@@ -46,8 +45,6 @@ class BookingControllerIntegrationTest {
 
     @MockitoBean
     private CustomerClient customerClient;
-    @MockitoBean
-    private NotificationClient notificationClient;
 
     private Long roomId;
     private final LocalDate checkIn = LocalDate.now().plusDays(10);

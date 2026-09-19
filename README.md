@@ -129,7 +129,7 @@ Fel returneras som `application/problem+json`:
 | `SPRING_DATASOURCE_PASSWORD` | `postgres` | |
 | `JWT_SECRET` | — | 32 byte Base64, samma som kundtjänsten |
 | `CUSTOMER_SERVICE_URL` | `http://localhost:8080` | |
-| `NOTIFICATION_SERVICE_URL` | `http://localhost:8082` | |
+| `NOTIFICATION_SERVICE_URL` | tomt | Valfri. Utelämna eller lämna tom för att stänga av notifieringsanrop. |
 
 ## Kubernetes
 

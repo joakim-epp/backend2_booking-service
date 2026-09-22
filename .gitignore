@@ -38,5 +38,3 @@ src/main/resources/static/
 
 ### Secrets ###
 .env
-
-__pycache__/

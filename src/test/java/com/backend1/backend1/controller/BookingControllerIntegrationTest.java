@@ -1,5 +1,6 @@
 package com.backend1.backend1.controller;
 
+import com.backend1.backend1.TestcontainersConfiguration;
 import com.backend1.backend1.client.CustomerClient;
 import com.backend1.backend1.exception.CustomerServiceUnavailableException;
 import com.backend1.backend1.model.Booking;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(properties = "notification.service.url=")
 @AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
 class BookingControllerIntegrationTest {
 
     @Autowired

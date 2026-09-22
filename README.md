@@ -71,9 +71,13 @@ proxar `/api` till backend. `npm run build` skriver bundlen till `src/main/resou
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 ```
 
-26 tester mot H2, ingen Docker behövs. `BookingControllerIntegrationTest` går genom
-säkerhetsfilter, controller, service, repository och databas med riktiga HTTP-anrop.
-Kundtjänsten och notifieringstjänsten ersätts med `@MockitoBean` på klientgränssnittet.
+Docker måste vara igång. Testcontainers startar en isolerad PostgreSQL 17-databas
+med `postgres:17-alpine` och städar upp den efter testkörningen. Ingen lokal databas
+eller Docker Compose behövs.
+
+`BookingControllerIntegrationTest` går genom säkerhetsfilter, controller, service,
+repository och PostgreSQL med MockMvc. Kundklienten ersätts med `@MockitoBean`;
+notifieringsklienten körs utan konfigurerad URL.
 Bland annat: 201 vid skapad bokning, 409 vid dubbelbokning, 404 vid okänd kund, 503 när
 kundtjänsten är nere, 401 utan token, 400 vid ogiltig inmatning.
 

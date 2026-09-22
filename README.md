@@ -175,3 +175,17 @@ En kund kan raderas mellan att bokningstjänsten kontrollerat att kunden finns o
 sparas, och en bokning kan skapas mellan kundtjänstens count-fråga och raderingen. Ingen
 läsbaserad kontroll stänger det fönstret, det skulle kräva lås eller en samordnande tjänst.
 Kundtjänsten raderar mjukt, så en sådan bokning kan ändå visa kundens namn, märkt "(raderad)".
+
+### Verifiering av Railway-deploy
+
+Efter publicering av Docker-imagen startar CI en Railway-deploy och väntar på just
+det deployment-ID som API:t returnerar. Jobbet kräver en konfigurerad hälsokontroll
+i Railway, status `SUCCESS` för den nya deployen och svaret `UP` från tjänstens
+publika `/actuator/health`. Felaktiga eller avbrutna deployer och en väntetid över
+tio minuter gör att jobbet misslyckas.
+
+Kontrollerna för deployskriptet körs utan Railway-token:
+
+```bash
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```

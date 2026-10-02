@@ -195,5 +195,15 @@ jobbet misslyckas. Pipelinen väntar inte på att tjänsten startar och anropar 
 `/actuator/health`. Railways egen hälsokontroll finns kvar. Kontrollera slutlig
 deploymentstatus i Railway och öppna tjänstens publika adress för att visa att den körs.
 
-Hemligheten `RAILWAY_TOKEN` hämtas från GitHub Secrets. Ingen Java-kod behöver byggas
-för deployment.
+Skapa en projekttoken för rätt Railway-projekt och environment under Project Settings →
+Tokens. Spara den som `RAILWAY_TOKEN` under GitHub Settings → Secrets and variables →
+Actions → Secrets. Befintliga `DOCKERHUB_USERNAME` och `DOCKERHUB_TOKEN` behövs för imagebygget.
+Under Actions → Variables ska `RAILWAY_SERVICE_ID` vara ID:t för bokningstjänsten i samma
+projekt och environment. Byts Railway-projekt uppdateras token och tjänste-ID här.
+
+När Railway kör en Docker Hub-image läser den inte repots `railway.json`. Sätt därför
+hälsokontrollen `/actuator/health/readiness` och timeout 180 sekunder i Railway Settings.
+Tjänsten behöver egen Postgres, `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`,
+`SPRING_DATASOURCE_PASSWORD`, `PORT=8081`, `CUSTOMER_SERVICE_URL` och samma `JWT_SECRET`
+som kundtjänsten. `NOTIFICATION_SERVICE_URL` kan lämnas tom om notifieringstjänsten saknas.
+Ingen Java-kod behöver byggas för deployment.

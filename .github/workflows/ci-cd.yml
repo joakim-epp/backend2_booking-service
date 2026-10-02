@@ -92,8 +92,10 @@ jobs:
       - name: Deploy from Docker Hub
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: 93e23732-56dc-4611-9f3f-4ae2820dc33b
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
         run: |
+          : "${RAILWAY_TOKEN:?Set the RAILWAY_TOKEN repository secret}"
+          : "${RAILWAY_SERVICE_ID:?Set the RAILWAY_SERVICE_ID repository variable}"
           npx --yes @railway/cli@5.49.0 redeploy \
             --from-source \
             --service "$RAILWAY_SERVICE_ID" \
